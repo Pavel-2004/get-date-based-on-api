@@ -19,6 +19,25 @@ class getDays {
         }
         return $bool2;
     }
+    public static function finalCheck($date){
+        $year2 = mb_substr($date, 0, 4); 
+        $curl2 = curl_init(); 
+        curl_setopt_array($curl2, [
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_URL => 'https://canada-holidays.ca/api/v1/provinces/ON?year=' . $year,
+            CURLOPT_USERAGENT => 'API'
+        ]);
+        $responses2 = curl_exec($curl2);
+        $responses2 = json_decode($responses2, true); 
+        $responses2 = $responses2['province']['holidays'];
+        $bool3 = false;
+        foreach ($responses2 as $res2):
+            if ($date === $response){
+                $bool3 = true;
+            }
+        endforeach;
+        return $bool3; 
+    }
     public static function getDate($date, $days){
         $year = mb_substr($date, 0, 4);
         $curl = curl_init();
@@ -31,19 +50,22 @@ class getDays {
         $responses = json_decode($responses, true);
         $responses = $responses['province']['holidays'];
         $final = new Carbon($date);
-        $i = 0; 
+        $i = 1; 
         while($i !== $days):
             if (getDays::check1($final->toDateString(), $responses)){
                 $final->addDay();
             } elseif (getDays::check2($final)){
                 $final->addDay();
             } else{
-                $final->addDay();
-                $i++; 
+                if (getDays::finalCheck($final->toDateString())){
+                    $final->addDay();
+                } else{
+                    $i++;
+                    $final->addDay(); 
+                }
             }
         endwhile;
         return $final->toDateString(); 
     }
 }
-#test
 echo(getDays::getDate('2021-01-01', 3));
